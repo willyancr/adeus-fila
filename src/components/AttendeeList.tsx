@@ -1,10 +1,11 @@
 import searchSVG from '../assets/search.svg';
+import TableComponent from './Table';
 import { Input } from './ui/input';
 
 function AttendeeList() {
   return (
     <div>
-      <div className="flex items-center w-[437px] gap-4">
+      <div className="flex items-center w-[437px] gap-4 mb-4">
         <h1 className="text-2xl font-bold">Participantes</h1>
         <div className="relative">
           <img
@@ -18,6 +19,7 @@ function AttendeeList() {
           />
         </div>
       </div>
+      <TableComponent />
     </div>
   );
 }
