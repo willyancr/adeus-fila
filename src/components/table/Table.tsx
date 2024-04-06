@@ -8,9 +8,11 @@ import { attendees } from '../dataUsers';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
+import { useState } from 'react';
 
 dayjs.extend(relativeTime);
 export default function TableComponen({ search }: { search: string }) {
+  const [currentPage, setCurrentPage] = useState(1);
   return (
     <div className="border border-white/10 rounded-lg w-full">
       <div className="relative w-full overflow-auto">
@@ -30,6 +32,7 @@ export default function TableComponen({ search }: { search: string }) {
           <TableBody>
             {attendees &&
               attendees
+                .slice((currentPage - 1) * 5, currentPage * 5)
                 .filter((attendee) =>
                   attendee.name
                     .toLocaleLowerCase()
@@ -69,7 +72,7 @@ export default function TableComponen({ search }: { search: string }) {
           </TableBody>
         </Table>
       </div>
-      <PaginationComponent />
+      <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage}/>
     </div>
   );
 }
