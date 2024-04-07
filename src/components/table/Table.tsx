@@ -4,15 +4,34 @@ import { MoreHorizontal } from 'lucide-react';
 import TitleHeadTable from './TitleHeadTable';
 import PaginationComponent from './PaginationComponent';
 import CellTable from './CellTable';
-import { attendees } from '../dataUsers';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 dayjs.extend(relativeTime);
+
+interface AttendeesProps {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  checkinAt: string;
+}
 export default function TableComponen({ search }: { search: string }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [attendees, setAttendees] = useState<AttendeesProps[]>([]);
+
+  useEffect(() => {
+    fetch(
+      'http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees',
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setAttendees(data.attendees);
+      });
+  }, [currentPage]);
+
   return (
     <div className="border border-white/10 rounded-lg w-full">
       <div className="relative w-full overflow-auto">
@@ -32,7 +51,7 @@ export default function TableComponen({ search }: { search: string }) {
           <TableBody>
             {attendees &&
               attendees
-                .slice((currentPage - 1) * 5, currentPage * 5)
+
                 .filter((attendee) =>
                   attendee.name
                     .toLocaleLowerCase()
@@ -72,7 +91,10 @@ export default function TableComponen({ search }: { search: string }) {
           </TableBody>
         </Table>
       </div>
-      <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage}/>
+      <PaginationComponent
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
     </div>
   );
 }
