@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableHeader, TableBody, Table } from '@/components/ui/table';
 import { MoreHorizontal } from 'lucide-react';
@@ -7,30 +8,44 @@ import CellTable from './CellTable';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
-import { useEffect, useState } from 'react';
 
 dayjs.extend(relativeTime);
 
-interface AttendeesProps {
-  id: number;
+export interface AttendeesProps {
+  id: string;
   name: string;
   email: string;
   createdAt: string;
-  checkinAt: string;
+  checkedInAt: string | null;
 }
 export default function TableComponen({ search }: { search: string }) {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(() => {
+    const url = new URL(window.location.toString());
+
+    if (url.searchParams.has('page')) {
+      return Number(url.searchParams.get('page'));
+    }
+    return 1;
+  });
   const [attendees, setAttendees] = useState<AttendeesProps[]>([]);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    fetch(
-      'http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees',
-    )
+    const url = new URL(
+      `http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees?`,
+    );
+    url.searchParams.set('pageIndex', String(page - 1));
+    if (search.length > 0) {
+      url.searchParams.set('query', search);
+    }
+
+    fetch(url)
       .then((response) => response.json())
       .then((data) => {
         setAttendees(data.attendees);
+        setTotal(data.total);
       });
-  }, [currentPage]);
+  }, [page, search]);
 
   return (
     <div className="border border-white/10 rounded-lg w-full">
@@ -49,51 +64,46 @@ export default function TableComponen({ search }: { search: string }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {attendees &&
-              attendees
+            {attendees.map((attendee) => (
+              <TableRow key={attendee.id}>
+                <CellTable>
+                  <Checkbox id="select-1" className="border border-white/20" />
+                </CellTable>
+                <CellTable>{attendee.id}</CellTable>
+                <CellTable>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-white">
+                      {attendee.name}
+                    </span>
+                    <span className="text-xs ">{attendee.email}</span>
+                  </div>
+                </CellTable>
+                <CellTable>
+                  {dayjs().locale('pt-br').to(attendee.createdAt)}
+                </CellTable>
+                <CellTable>
+                  {attendee.checkedInAt === null ? (
+                    <span className="text-zinc-400">Não fez check-in</span>
+                  ) : (
+                    dayjs().locale('pt-br').to(attendee.checkedInAt)
+                  )}
+                </CellTable>
 
-                .filter((attendee) =>
-                  attendee.name
-                    .toLocaleLowerCase()
-                    .includes(search.toLocaleLowerCase()),
-                )
-                .map((attendee) => (
-                  <TableRow key={attendee.id}>
-                    <CellTable>
-                      <Checkbox
-                        id="select-1"
-                        className="border border-white/20"
-                      />
-                    </CellTable>
-                    <CellTable>{attendee.id}</CellTable>
-                    <CellTable>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-white">
-                          {attendee.name}
-                        </span>
-                        <span className="text-xs ">{attendee.email}</span>
-                      </div>
-                    </CellTable>
-                    <CellTable>
-                      {dayjs().locale('pt-br').to(attendee.createdAt)}
-                    </CellTable>
-                    <CellTable>
-                      {dayjs().locale('pt-br').to(attendee.checkinAt)}
-                    </CellTable>
-
-                    <CellTable>
-                      <button>
-                        <MoreHorizontal className="bg-black/20 border border-white/20 rounded-md p-1.5" />
-                      </button>
-                    </CellTable>
-                  </TableRow>
-                ))}
+                <CellTable>
+                  <button>
+                    <MoreHorizontal className="bg-black/20 border border-white/20 rounded-md p-1.5" />
+                  </button>
+                </CellTable>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
       <PaginationComponent
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
+        page={page}
+        setPage={setPage}
+        total={total}
+        attendees={attendees}
       />
     </div>
   );
