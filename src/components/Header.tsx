@@ -5,8 +5,10 @@ function Header() {
   return (
     <div className="flex items-center gap-5 py-2">
       <img src={nlwUniteSvg} alt="Logomarca" />
-      <NavLink href="/eventos" className="text-zinc-300">Eventos</NavLink>
-      <NavLink href="/participantes">Participantes</NavLink>
+      <NavLink href="/" className="text-zinc-300">
+        Eventos
+      </NavLink>
+      <NavLink href="/">Participantes</NavLink>
     </div>
   );
 }
